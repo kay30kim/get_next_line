@@ -6,163 +6,89 @@
 /*   By: kyung-ki <kyung-ki@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:38:12 by kyung-ki          #+#    #+#             */
-/*   Updated: 2023/11/01 17:39:56 by kyung-ki         ###   ########.fr       */
+/*   Updated: 2023/11/02 15:00:36 by kyung-ki         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-static char	*ft_next(char **temp)
+char	*next_line(char *line)
 {
-	char	*line;
-	char	*ptr;
+	char	*cur_line;
+	char	*next_line;
 
-	ptr = *temp;
-	while (*ptr && *ptr != '\n')
-		++ptr;
-	ptr += (*ptr == '\n');
-	line = ft_substr (*temp, 0, (size_t)(ptr - *temp));
-	if (!line)
-	{
-		free (*temp);
+	cur_line = ft_strchr(line, '\n');
+	if (!cur_line)
 		return (NULL);
-	}
-	ptr = ft_substr (ptr, 0, ft_strlen (ptr));
-	free (*temp);
-	*temp = ptr;
-	return (line);
+	next_line = ft_strdup(cur_line + 1);
+	*(cur_line + 1) = '\0';
+	return (next_line);
 }
 
-static char	*ft_read(char *temp, int fd, char *buf)
+char	*get_1line_4buf(char *buf, int fd)
 {
-	ssize_t		r;
+	char	tmp[BUFFER_SIZE + 1];
+	int		read_bytes;
 
-	r = 1;
-	while (r && !ft_strchr (temp, '\n'))
+	while (!ft_strchr(buf, '\n'))
 	{
-		r = read (fd, buf, BUFFER_SIZE);
-		if (r == -1)
-		{
-			free (buf);
-			free (temp);
-			return (NULL);
-		}
-		buf[r] = 0;
-		temp = ft_strjoin_free_s1 (temp, buf);
-		if (!temp)
-		{
-			free (buf);
-			return (NULL);
-		}
+		read_bytes = read(fd, tmp, BUFFER_SIZE);
+		if (read_bytes < 1)
+			break ;
+		tmp[read_bytes] = '\0';
+		buf = ft_strjoin(buf, tmp);
 	}
-	free (buf);
-	return (temp);
+	if (read_bytes == -1)
+	{
+		free(buf);
+		buf = NULL;
+	}
+	return (buf);
 }
 
 char	*get_next_line(int fd)
 {
-	static char	*temp[OPEN_MAX];
-	char		*buf;
+	static char	*buf;
+	char		*line;
 
-	if (fd == -1 || BUFFER_SIZE < 1)
-		return (NULL);
-	if (!temp[fd])
-		temp[fd] = ft_strdup("");
-	if (!temp[fd])
-		return (NULL);
-	buf = malloc (sizeof (*buf) * (BUFFER_SIZE + 1));
-	if (!buf)
+	line = get_1line_4buf(buf, fd);
+	if (!line)
 	{
-		free (temp[fd]);
+		buf = NULL;
 		return (NULL);
 	}
-	temp[fd] = ft_read (temp[fd], fd, buf);
-	if (!temp[fd])
-		return (NULL);
-	if (!*temp[fd])
-	{
-		free (temp[fd]);
-		temp[fd] = NULL;
-		return (NULL);
-	}
-	return (ft_next(&temp[fd]));
+	buf = next_line(line);
+	return (line);
 }
-
-#include "get_next_line.h"
 
 /*
-
-static char	*read_line(int fd)
+int	main()
 {
-	char	buf[BUFFER_SIZE + 1];
-	char	*line;
-	int		bytes_read;
+	char	*fname = "sample.txt";
+	char	buf[BUFFER_SIZE];
+	char	*buf2;
 	int		i;
+	int	fd = open("sample.txt", O_RDONLY);
+	char *line1 = "Hello\nWorld";
 
-	bytes_read = read(fd, buf, BUFFER_SIZE);
-	if (bytes_read <= 0)
-		return (NULL);
-	buf[bytes_read] = '\0';
-	line = malloc(BUFFER_SIZE);
-	if (!line)
-		return (NULL);
-	i = 0;
-	while (i < bytes_read && buf[i] != '\n')
+	if (fd < 0)
+		printf("error\n");
+	else
 	{
-		line[i] = buf[i];
-		i++;
+		printf("filename = %s, Descriptor = %d\n", fname, fd);
+		buf2 = get_next_line(fd);
+		while (buf2)
+		{
+			i = 0;
+			while (buf2[i])
+				printf("%c", buf2[i++]);
+			free(buf2);
+			buf2 = get_next_line(fd);
+			printf("\n");
+		}
+		//read(fd, buf, BUFFER_SIZE);
+		//printf("%s\n",buf);
+		close(fd);		
 	}
-	line[i] = '\0';
-	return (line);
-}
-
-char	*get_next_line(int fd)
-{
-	static char	*remainder;
-	char		*line;
-	char		*tmp;
-	int			offset;
-
-	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, 0, 0) < 0)
-		return (NULL);
-	line = NULL;
-    offset = 0;
-	while (!line)
-    {
-        if (!remainder)
-            tmp = ft_strdup("");
-        else
-            tmp = ft_strdup(remainder);
-        
-        free(remainder);
-        remainder = NULL;
-        
-        tmp = ft_strjoin(tmp, read_line(fd));
-        
-        if (!tmp || !tmp[0])
-        {
-            free(tmp);
-            return (NULL);
-        }
-        
-        while (tmp[offset] && tmp[offset] != '\n')
-            offset++;
-        
-        if (tmp[offset] == '\n')
-        {
-            tmp[offset] = '\0';
-            remainder = ft_strdup(tmp + offset + 1);
-        }
-        
-        if (line)
-            free(line);
-        line = tmp;
-        
-        if (tmp[offset] == '\n')
-            break;
-    }
-	return (line);
-}
-
-*/
-
+	return (0);
+}*/
