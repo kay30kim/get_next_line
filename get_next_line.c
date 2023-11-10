@@ -6,7 +6,7 @@
 /*   By: kyung-ki <kyung-ki@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/01 13:38:12 by kyung-ki          #+#    #+#             */
-/*   Updated: 2023/11/02 15:00:36 by kyung-ki         ###   ########.fr       */
+/*   Updated: 2023/11/09 20:05:24 by kyung-ki         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,14 +14,14 @@
 
 char	*next_line(char *line)
 {
-	char	*cur_line;
+	char	*cur_line_end;
 	char	*next_line;
 
-	cur_line = ft_strchr(line, '\n');
-	if (!cur_line)
+	cur_line_end = ft_strchr(line, '\n');
+	if (!cur_line_end)
 		return (NULL);
-	next_line = ft_strdup(cur_line + 1);
-	*(cur_line + 1) = '\0';
+	next_line = ft_strdup(cur_line_end + 1);
+	*(cur_line_end + 1) = '\0';
 	return (next_line);
 }
 
